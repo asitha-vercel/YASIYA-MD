@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *"
+    - cron: "*/44 * * * *" # සෑම විනාඩි 44කට වරක්ම ක්‍රියාත්මක වේ
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -24,43 +24,44 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: 🛠️ 2. Direct Update (Force Vercel Restart)
+      - name: 🛠️ 2. Manage Status Files
         run: |
           mkdir -p vercel_status github_status
-          echo "Sync: $(date +%s)" > vercel_status/last_restart.txt
-          echo "Last GitHub Sync: $(date)" > github_status/restart_log.txt
+          # Vercel එකට අලුත් update එකක් බව පෙන්වීමට Random අගයක් එක් කරයි
+          echo "Sync: $(date +%s) - $RANDOM" > vercel_status/last_restart.txt
+          echo "GitHub-Cycle: $(date)" > github_status/restart_log.txt
 
-      - name: ⬆️ 3. Push to Repository (Triggers Vercel)
+      - name: ⬆️ 3. Push to Repository (Vercel Trigger)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
-          git add vercel_status/last_restart.txt github_status/restart_log.txt
-          git commit -m "⚡ Vercel-Cycle: $(date +'%H:%M')" || echo "No changes"
-          git push
+          git add .
+          # මෙතැනදී සිදුකරන Commit එක නිසා Vercel එක Restart වේ
+          git commit -m "🚀 Vercel-Cycle: $(date +'%H:%M')" || exit 0
+          git push --force origin main
 
-      - name: 🔄 4. GitHub 5-Hour Infinite Loop
+      - name: 🔄 4. GitHub 5-Hour Persistence Logic
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
+          # පැය 5ක් (තත්පර 18000ක්) පිරුණු පසු අලුත්ම Workflow එකක් පණගන්වයි
           UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
           if [ "$UPTIME_SEC" -gt 18000 ]; then
-            echo "GitHub 5-Hour reached. Restarting Workflow..."
+            echo "GitHub 5-Hour limit reached. Re-triggering new cycle..."
             gh workflow run infinite_ultra_keeper.yml
           else
-            echo "GitHub session stable."
+            echo "GitHub session is still active and fresh."
           fi
 
-      - name: 🧹 5. Cleanup Old Runs (Auto Delete)
+      - name: 🧹 5. Cleanup Old Runs
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # දැනට අවසන් වී ඇති (Success/Cancelled/Failed) පරණ workflow runs ඔක්කොම delete කරයි
-          # එවිට ලැයිස්තුව පිරෙන්නේ නැත.
-          echo "Cleaning up old workflow runs..."
-          gh run list --workflow infinite_ultra_keeper.yml --limit 100 --json databaseId -q '.[].databaseId' | xargs -I{} gh run delete {}
-          echo "Cleanup completed!"
+          # පරණ දුවපු සහ Cancel වුණු Runs මකා දමයි (ලැයිස්තුව පිරිසිදුව තබා ගැනීමට)
+          echo "Cleaning up history..."
+          gh run list --workflow infinite_ultra_keeper.yml --limit 50 --json databaseId -q '.[].databaseId' | xargs -I{} gh run delete {} || true
 
       - name: 🌐 6. Hyper Ping
         run: |
           curl -I -s https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/
-          echo "Vercel Wake-up Call Sent!"
+          echo "Vercel Pinged Successfully!"
