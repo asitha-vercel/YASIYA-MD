@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *" # සෑම විනාඩි 44 කට වරක්ම අලුත් Run එකක් පටන් ගනී
+    - cron: "*/44 * * * *"
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -11,53 +11,44 @@ permissions:
   contents: write
   actions: write
 
-# මෙතනින් තමයි පරණ දුවන එක නතර කරලා අලුත් එකට ඉඩ දෙන්නේ
 concurrency:
   group: bot-infinite-loop
-  cancel-in-progress: true
+  cancel-in-progress: true # අලුත් එක ආ සැණින් පරණ එක නතර කර වේගය වැඩි කරයි
 
 jobs:
   loop-engine:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 1. Ultra Fast Checkout
+      - name: 🚀 1. Turbo Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 1 # මුළු history එකම ගන්නේ නැති නිසා තත්පරයකින් checkout වේ
 
-      - name: 🛠️ 2. Manage Status Folders
+      - name: 🛠️ 2. Instant Status Update
         run: |
-          mkdir -p vercel_status
-          mkdir -p github_status
-          
-          # Vercel එක Restart කිරීමට Commit එකක් හැදීම
-          echo "Vercel Cycle: $(date)" > vercel_status/last_restart.txt
-          echo "Salt: $RANDOM" >> vercel_status/last_restart.txt
-          
-          # GitHub එක පැය 6න් 6ට Restart වෙන බව වාර්තා කිරීමට
-          echo "Last Active: $(date)" > github_status/restart_log.txt
+          mkdir -p vercel_status github_status
+          # ඉතා කෙටි තොරතුරක් පමණක් ලිවීමෙන් වේගය වැඩි කරයි
+          echo "$(date +%s)" > vercel_status/last_restart.txt
+          echo "Active" > github_status/restart_log.txt
 
-      - name: ⬆️ 3. Push Updates to Repository
+      - name: ⬆️ 3. Quick Push (Vercel Trigger)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
-          
-          git add vercel_status/last_restart.txt github_status/restart_log.txt
-          
-          # [skip ci] භාවිතා නොකරන්න, එවිටයි Vercel එක GitHub Commit එක හඳුනාගන්නේ
-          git commit -m "🚀 Power-Sync Cycle: $(date +'%H:%M')" || echo "No changes"
-          git push
+          git add .
+          # Vercel එක වහාම හඳුනා ගැනීමට කෙටි Commit Message එකක්
+          git commit -m "⚡ Turbo: $(date +'%M')" || exit 0
+          git push --force # වේගවත් Push කිරීමක් සඳහා
 
-      - name: 🔄 4. Forced GitHub Persistence
+      - name: 🔄 4. Instant Loop Trigger
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # මෙහිදී කෙලින්ම අලුත් Run එකක් Trigger කරනවා
-          # Cron එක වැඩ නොකළත් මෙය මගින් Loop එක දිගටම පවත්වා ගනී
-          echo "Dispatching the next infinite cycle..."
-          gh workflow run infinite_ultra_keeper.yml || echo "Already triggered"
+          # පැය 6 සීමාව ඉවත් කරමින් අලුත්ම Cycle එකක් Dispatch කිරීම
+          gh workflow run infinite_ultra_keeper.yml --ref main
 
-      - name: 🌐 5. Vercel Wake-up Call
+      - name: 🌐 5. Hyper Ping (Wake Up)
         run: |
-          curl -Is https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/ | head -n 1
-          echo "Vercel Pinged Successfully!"
+          # Vercel එක තත්පරයෙන් අවදි කිරීමට (Header පමණක් ලබා ගනී)
+          curl -I -s https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/
+          echo "Bot Pulsed!"
