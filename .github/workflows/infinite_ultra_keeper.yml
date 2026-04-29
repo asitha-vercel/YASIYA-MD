@@ -22,15 +22,12 @@ jobs:
 
       - name: 🛠️ 2. Manage Status Folders
         run: |
-          # Folder දෙකම හදලා ඒවට dummy files දානවා Git එකට අහුවෙන්න
           mkdir -p vercel_status
           mkdir -p github_status
           
-          # Vercel එක Restart වෙන්න කරන Update එක
           echo "Vercel Cycle: $(date)" > vercel_status/last_restart.txt
           echo "Salt: $RANDOM" >> vercel_status/last_restart.txt
           
-          # GitHub status එකට නිකන් file එකක් හදනවා error එක එන එක නතර කරන්න
           if [ ! -f github_status/restart_log.txt ]; then
             echo "Init" > github_status/restart_log.txt
           fi
@@ -41,7 +38,6 @@ jobs:
         run: |
           UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
           
-          # පැය 5 විනාඩි 45 පිරුණම අලුත් Run එකක් Trigger කරනවා
           if [ "$UPTIME_SEC" -gt 20700 ]; then
             echo "GitHub 6-Hour Limit Approaching. Triggering Next Run..."
             echo "GitHub Re-Triggered At: $(date)" > github_status/restart_log.txt
@@ -53,7 +49,6 @@ jobs:
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           
-          # මෙතන තමයි වැදගත්ම දේ: තියෙන file විතරක් add කරගන්නවා
           git add vercel_status/last_restart.txt
           git add github_status/restart_log.txt
           
@@ -62,6 +57,6 @@ jobs:
 
       - name: 🌐 5. Vercel Wake-up Call
         run: |
-          # ඔබේ URL එක මෙතනට දාන්න
+          # URL එක නිවැරදිව ඇතුළත් කර පේළිය වසා ඇත
           curl -Is https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/ | head -n 1
-          echo "Vercel Pinged Successful
+          echo "Vercel Pinged Successfully!"
