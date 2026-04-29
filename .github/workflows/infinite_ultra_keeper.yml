@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *"
+    - cron: "*/44 * * * *" # සෑම විනාඩි 44 කට වරක්ම අලුත් Run එකක් පටන් ගනී
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
   actions: write
+
+# මෙතනින් තමයි පරණ දුවන එක නතර කරලා අලුත් එකට ඉඩ දෙන්නේ
+concurrency:
+  group: bot-infinite-loop
+  cancel-in-progress: true
 
 jobs:
   loop-engine:
@@ -25,38 +30,34 @@ jobs:
           mkdir -p vercel_status
           mkdir -p github_status
           
+          # Vercel එක Restart කිරීමට Commit එකක් හැදීම
           echo "Vercel Cycle: $(date)" > vercel_status/last_restart.txt
           echo "Salt: $RANDOM" >> vercel_status/last_restart.txt
           
-          if [ ! -f github_status/restart_log.txt ]; then
-            echo "Init" > github_status/restart_log.txt
-          fi
+          # GitHub එක පැය 6න් 6ට Restart වෙන බව වාර්තා කිරීමට
+          echo "Last Active: $(date)" > github_status/restart_log.txt
 
-      - name: 🔄 3. Anti-6-Hour GitHub Loop Logic
-        env:
-          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-        run: |
-          UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
-          
-          if [ "$UPTIME_SEC" -gt 20700 ]; then
-            echo "GitHub 6-Hour Limit Approaching. Triggering Next Run..."
-            echo "GitHub Re-Triggered At: $(date)" > github_status/restart_log.txt
-            gh workflow run infinite_ultra_keeper.yml
-          fi
-
-      - name: ⬆️ 4. Push Updates to Repository
+      - name: ⬆️ 3. Push Updates to Repository
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           
-          git add vercel_status/last_restart.txt
-          git add github_status/restart_log.txt
+          git add vercel_status/last_restart.txt github_status/restart_log.txt
           
-          git commit -m "🚀 Power-Sync: $(date +'%H:%M') [skip ci]" || echo "No changes to commit"
+          # [skip ci] භාවිතා නොකරන්න, එවිටයි Vercel එක GitHub Commit එක හඳුනාගන්නේ
+          git commit -m "🚀 Power-Sync Cycle: $(date +'%H:%M')" || echo "No changes"
           git push
+
+      - name: 🔄 4. Forced GitHub Persistence
+        env:
+          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        run: |
+          # මෙහිදී කෙලින්ම අලුත් Run එකක් Trigger කරනවා
+          # Cron එක වැඩ නොකළත් මෙය මගින් Loop එක දිගටම පවත්වා ගනී
+          echo "Dispatching the next infinite cycle..."
+          gh workflow run infinite_ultra_keeper.yml || echo "Already triggered"
 
       - name: 🌐 5. Vercel Wake-up Call
         run: |
-          # URL එක නිවැරදිව ඇතුළත් කර පේළිය වසා ඇත
           curl -Is https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/ | head -n 1
           echo "Vercel Pinged Successfully!"
