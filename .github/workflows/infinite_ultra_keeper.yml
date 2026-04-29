@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *"
+    - cron: "*/44 * * * *" # සෑම විනාඩි 44කට වරක්ම ක්‍රියාත්මක වේ
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -11,7 +11,6 @@ permissions:
   contents: write
   actions: write
 
-# මෙය අත්‍යවශ්‍යයි: පරණ එක නතර කර අලුත් එකට ඉඩ දීමට
 concurrency:
   group: bot-infinite-loop
   cancel-in-progress: true
@@ -20,40 +19,42 @@ jobs:
   loop-engine:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 1. Turbo Checkout
+      - name: 🚀 1. Fast Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: 🛠️ 2. Instant Status Update
+      - name: 🛠️ 2. Direct Update (Force Vercel Restart)
         run: |
           mkdir -p vercel_status github_status
-          echo "$(date +%s)" > vercel_status/last_restart.txt
-          echo "Active" > github_status/restart_log.txt
+          # මෙතැනදී සෑම විනාඩි 44කටම වරක් අනිවාර්යයෙන්ම file එක update වේ
+          echo "Sync: $(date +%s)" > vercel_status/last_restart.txt
+          echo "Last GitHub Sync: $(date)" > github_status/restart_log.txt
 
-      - name: ⬆️ 3. Quick Push (Vercel Trigger)
+      - name: ⬆️ 3. Push to Repository (Triggers Vercel)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
-          git add .
-          git commit -m "⚡ Sync: $(date +'%M')" || exit 0
+          git add vercel_status/last_restart.txt github_status/restart_log.txt
+          # Vercel එකට අලුත් Build එකක් යැවීමට මෙතැනදී Commit එකක් අනිවාර්යයෙන්ම සිදු කරයි
+          git commit -m "⚡ Vercel-Cycle: $(date +'%H:%M')" || echo "No changes"
           git push
 
-      - name: 🔄 4. Smart Loop Trigger (Anti-Flood)
+      - name: 🔄 4. GitHub 5-Hour Infinite Loop
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # මෙතනදී බලන්නේ පැය 5 විනාඩි 40ක් (තත්පර 20400) ඉක්මවා ඇත්නම් පමණක් 
-          # අලුත් එකක් Trigger කරන ලෙසයි. එවිට අනවශ්‍ය ලෙස Actions පිරෙන්නේ නැත.
+          # පැය 5ක් (තත්පර 18000) සම්පූර්ණ වී ඇත්නම් පමණක් අලුත් Run එකක් පටන් ගනී
+          # එවිට පැය 6 සීමාව කිසිලෙසකත් වදින්නේ නැත
           UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
-          if [ "$UPTIME_SEC" -gt 20400 ]; then
-            echo "GitHub 6-Hour limit near. Dispatching new run..."
+          if [ "$UPTIME_SEC" -gt 18000 ]; then
+            echo "GitHub 5-Hour reached. Restarting Workflow..."
             gh workflow run infinite_ultra_keeper.yml
           else
-            echo "Cycle is fresh. No need to flood Actions."
+            echo "GitHub session is still within 5 hours. Continuing current run."
           fi
 
-      - name: 🌐 5. Hyper Ping (Wake Up)
+      - name: 🌐 5. Hyper Ping
         run: |
           curl -I -s https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/
-          echo "Bot Pulsed!"
+          echo "Vercel Wake-up Call Sent!"
