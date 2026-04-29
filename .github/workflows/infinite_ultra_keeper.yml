@@ -11,9 +11,10 @@ permissions:
   contents: write
   actions: write
 
+# මෙය අත්‍යවශ්‍යයි: පරණ එක නතර කර අලුත් එකට ඉඩ දීමට
 concurrency:
   group: bot-infinite-loop
-  cancel-in-progress: true # අලුත් එක ආ සැණින් පරණ එක නතර කර වේගය වැඩි කරයි
+  cancel-in-progress: true
 
 jobs:
   loop-engine:
@@ -22,12 +23,11 @@ jobs:
       - name: 🚀 1. Turbo Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1 # මුළු history එකම ගන්නේ නැති නිසා තත්පරයකින් checkout වේ
+          fetch-depth: 1
 
       - name: 🛠️ 2. Instant Status Update
         run: |
           mkdir -p vercel_status github_status
-          # ඉතා කෙටි තොරතුරක් පමණක් ලිවීමෙන් වේගය වැඩි කරයි
           echo "$(date +%s)" > vercel_status/last_restart.txt
           echo "Active" > github_status/restart_log.txt
 
@@ -36,19 +36,24 @@ jobs:
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           git add .
-          # Vercel එක වහාම හඳුනා ගැනීමට කෙටි Commit Message එකක්
-          git commit -m "⚡ Turbo: $(date +'%M')" || exit 0
-          git push --force # වේගවත් Push කිරීමක් සඳහා
+          git commit -m "⚡ Sync: $(date +'%M')" || exit 0
+          git push
 
-      - name: 🔄 4. Instant Loop Trigger
+      - name: 🔄 4. Smart Loop Trigger (Anti-Flood)
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # පැය 6 සීමාව ඉවත් කරමින් අලුත්ම Cycle එකක් Dispatch කිරීම
-          gh workflow run infinite_ultra_keeper.yml --ref main
+          # මෙතනදී බලන්නේ පැය 5 විනාඩි 40ක් (තත්පර 20400) ඉක්මවා ඇත්නම් පමණක් 
+          # අලුත් එකක් Trigger කරන ලෙසයි. එවිට අනවශ්‍ය ලෙස Actions පිරෙන්නේ නැත.
+          UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
+          if [ "$UPTIME_SEC" -gt 20400 ]; then
+            echo "GitHub 6-Hour limit near. Dispatching new run..."
+            gh workflow run infinite_ultra_keeper.yml
+          else
+            echo "Cycle is fresh. No need to flood Actions."
+          fi
 
       - name: 🌐 5. Hyper Ping (Wake Up)
         run: |
-          # Vercel එක තත්පරයෙන් අවදි කිරීමට (Header පමණක් ලබා ගනී)
           curl -I -s https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/
           echo "Bot Pulsed!"
