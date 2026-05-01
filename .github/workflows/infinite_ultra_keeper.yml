@@ -76,5 +76,5 @@ jobs:
       - name: 🌐 6. Vercel Global Wake-up
         run: |
           # Vercel Deployment එකට 'Wake-up call' එකක් යැවීම
-          curl -I -s https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/
+          curl -I -s https://yasiya-oe5lvd4d2-asitha-vercels-projects.vercel.app/
           echo "Hyper-Wake Signal Sent Successfully!"
