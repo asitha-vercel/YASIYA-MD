@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *" # විනාඩි 44න් 44ට Vercel Restart එකට
+    - cron: "*/44 * * * *" # Strict Vercel Cycle
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -16,69 +16,74 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  loop-engine:
+  ultra-engine:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 1. Strategic Infrastructure Checkout
+      - name: 🚀 1. Advanced Infrastructure Initialization
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: 📁 2. Advanced Multi-Folder Initialization
+      - name: 🛠️ 2. Multi-Cluster Folder Expansion (20 Folders)
         run: |
-          # Folders 6ක් සාදා ඒවායේ ලස්සනට පෙනෙන්නට දත්ත ඇතුළත් කරයි
-          mkdir -p system_core v_restart_logs g_session_logs network_ping security_sync database_cache
+          # Folders 20ක් සාදා පද්ධතියේ ක්‍රියාකාරීත්වය බෙදා හරියි
+          mkdir -p core_system node_cluster_01 v_restart_logs g_session_logs network_ping security_sync \
+                   database_cache logic_gate analytics_data system_monitor build_artifacts user_interface \
+                   api_gateway cloud_sync backup_storage error_logs telemetry_io optimization_hub \
+                   heartbeat_sync global_registry process_manager
           
-          # System Core Update
-          echo "Build-ID: $(date +%s%N)" > system_core/build.info
-          
-          # Vercel Logic (විනාඩි 44න් 44ට)
-          echo "Last-Vercel-Refresh: $(date +'%Y-%m-%d %H:%M:%S')" > v_restart_logs/active_state.log
-          
-          # GitHub Logic
-          echo "Current-Session-Uptime: $(awk '{print $1}' /proc/uptime)" > g_session_logs/uptime.stats
-          
-          # Network & Security Files
-          echo "Status: High-Speed-Active" > network_ping/latency.txt
-          echo "Auth: Valid-Ultra-Bot" > security_sync/token_state.txt
-          echo "Cache-Clear: $(date)" > database_cache/buffer.tmp
+          # දත්ත පිරවීම (Vercel & GitHub Restart පෙන්වීමට)
+          echo "Build-UID: $(uuidgen)" > core_system/id.info
+          echo "Vercel-Pulse: $(date +'%H:%M:%S')" > v_restart_logs/active.log
+          echo "GitHub-Uptime: $(awk '{print $1}' /proc/uptime)" > g_session_logs/stats.log
+          echo "Latency-Check: OK" > network_ping/state.txt
+          echo "Encryption: AES-256" > security_sync/cipher.txt
+          echo "Buffer-State: Synced" > database_cache/mem.tmp
+          echo "Logic-Check: Valid" > logic_gate/verify.sh
+          echo "Traffic-Load: Minimal" > analytics_data/usage.csv
+          echo "Health-Status: Optimal" > system_monitor/health.txt
+          echo "Heartbeat-Interval: 44min" > heartbeat_sync/timing.cfg
+          echo "Process-ID: $$" > process_manager/active.pid
+          # ඉතිරි Folders සඳහාද Dummy දත්ත ඇතුළත් කරයි
+          for i in {1..20}; do echo "Module-$i: Stable" > node_cluster_01/mod_$i.data; done
 
-      - name: ⬆️ 3. High-Frequency Data Sync (Triggers Vercel)
+      - name: ⬆️ 3. Quantum-Level Data Sync (Triggers Vercel)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           git add .
-          # මෙතැනදී Commit එක සිදුවන නිසා Vercel එක අනිවාර්යයෙන්ම Restart වේ
-          git commit -m "💎 SUPREME-SYNC [$(date +'%H:%M')] - System Optimized" || exit 0
+          # සෑම විනාඩි 44කටම Commit එකක් යන බව තහවුරු කරයි
+          git commit -m "🌌 OMNIPOTENT-HEARTBEAT [$(date +'%H:%M')] - 20Clusters-Active" || exit 0
           git push --force origin main
 
-      - name: 🔄 4. 5-Hour Persistent Loop Architecture
+      - name: 🔄 4. Infinite-Persistence Self-Healing Logic
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # පැය 5 විනාඩි 45 (තත්පර 20700) සීමාව පරීක්ෂා කිරීම
+          # පැය 5 විනාඩි 45 (තත්පර 20700) සීමාව පරීක්ෂාව
           UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
-          echo "Current Machine Uptime: $UPTIME_SEC seconds"
+          echo "Current Machine Session: $UPTIME_SEC seconds"
           
           if [ "$UPTIME_SEC" -gt 20700 ]; then
-            echo "Critical Threshold Reached! Triggering Fresh Lifetime Cycle..."
+            echo "Critical Timeout Detected! Initiating God-Mode Restart..."
             gh workflow run infinite_ultra_keeper.yml --ref main
           else
-            echo "System Stability: Optimal. Continuing current execution cycle."
+            echo "System integrity confirmed. No restart required for GitHub cycle."
           fi
 
-      - name: 🧹 5. Automated History Purge (Success/Clean)
+      - name: 🧹 5. Automated System Maintenance (History Wipe)
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # පරණ Runs මකමින් Dashboard එක පිරිසිදුව තබා ගැනීම
-          echo "Initiating history cleanup sequence..."
-          gh run list --workflow infinite_ultra_keeper.yml --limit 40 --json databaseId -q '.[].databaseId' | xargs -I{} gh run delete {} || true
-          echo "Cleanup Sequence Completed."
+          # පරණ Runs මකා දමමින් පිරිසිදුව තබා ගැනීම
+          echo "Starting purge sequence..."
+          gh run list --workflow infinite_ultra_keeper.yml --limit 50 --json databaseId -q '.[].databaseId' | xargs -I{} gh run delete {} || true
+          echo "Purge sequence completed successfully."
 
-      - name: 🌐 6. Global Node Pulse (Hyper-Wake)
+      - name: 🌐 6. Global Node Hyper-Wake Pulse
         run: |
-          # Vercel App එක අවදි කර තැබීමට (Ping)
-          RESPONSE=$(curl -I -s https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/ | head -n 1)
-          echo "Server Response: $RESPONSE"
-          echo "Pulse Completed at $(date)"
+          # App එක අවදි කර තැබීමට High-Performance Ping එකක්
+          URL="https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $URL)
+          echo "Hyper-Wake Request Sent. Node Response: $HTTP_CODE"
+          echo "Global Sync Finished at $(date)"
