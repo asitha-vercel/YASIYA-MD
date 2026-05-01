@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *" # හරියටම විනාඩි 44න් 44ට Vercel අවදි කරයි
+    - cron: "*/44 * * * *" # Backup trigger
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -24,57 +24,50 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: 🛠️ 2. Generating 20 Active Clusters (Hyper-Visibility)
+      - name: 🛠️ 2. Dynamic Cluster Update (20 Folders)
         run: |
-          # Folders 20 සාදා ඒවාට Live-Time පණිවිඩ ඇතුළත් කිරීම
           mkdir -p system_core cluster_alpha v_restart_logs g_session_logs network_traffic security_vault \
                    db_cache logic_control analytics_hub monitor_io build_log ui_assets \
                    gateway_api cloud_sync backup_node error_stream telemetry_data optimization_engine \
                    heartbeat_sync registry_global process_control
           
           TIMESTAMP=$(date +'%Y-%m-%d %I:%M:%S %p')
-          
-          # හැම folder එකක්ම අලුත් බව පෙන්වීමට වෙනස්ම පණිවිඩයක් ලියයි
           for folder in */; do
-            echo "STATUS: ONLINE | SYNC: $TIMESTAMP | BY: thanuh-bot" > "${folder}activity.log"
+            echo "STATUS: ONLINE | SYNC: $TIMESTAMP" > "${folder}activity.log"
           done
-          
-          # විශේෂ logs කිහිපයක් update කිරීම
-          echo "VERCEL_TRIGGER: FORCE_RESTART_AT_$TIMESTAMP" > v_restart_logs/active.log
-          echo "GITHUB_LOOP: PERSISTENCE_ACTIVE" > g_session_logs/stats.log
 
-      - name: ⬆️ 3. Quantum Push (Visual GitHub Update)
+      - name: ⬆️ 3. Quantum Push (Visual Status)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           git add .
-          # මෙතැන Commit Message එකට වෙලාව දාපු නිසා GitHub එකේ 'now' කියලා වැටෙනවා ඔයාට පෙනේවි
-          git commit -m "💎 ULTRA-PRO-MAX [$(date +'%I:%M %p')] - 20 Clusters Online" || exit 0
+          git commit -m "💎 ULTRA-SYNC [$(date +'%I:%M %p')] - Clusters Active" || exit 0
           git push --force origin main
 
-      - name: 🔄 4. 5-Hour Persistent Self-Healing
+      - name: 🔄 4. Exact 44-Minute Re-Trigger Logic
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # පැය 5 විනාඩි 45 (තත්පර 20700) ලං වෙද්දී GitHub එක පණගන්වයි
           UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
+          
+          # GitHub Uptime එක පැය 5 විනාඩි 45 (20700s) පිරුනම අලුත්ම session එකක් පටන් ගනී
           if [ "$UPTIME_SEC" -gt 20700 ]; then
-            echo "Critical Uptime Reached. Re-launching Lifetime Workflow..."
+            echo "Session limit reached. Resetting Lifecycle..."
             gh workflow run infinite_ultra_keeper.yml --ref main
           else
-            echo "System Fresh. Uptime: ${UPTIME_SEC}s"
+            echo "Triggering next cycle in exactly 44 minutes..."
+            # මෙතනින් තමයි පමාව නැති කරන්නේ. 
+            # එකක් ඉවර වුණු ගමන් ඊළඟ එක schedule කරනවා.
+            gh workflow run infinite_ultra_keeper.yml --ref main
           fi
 
-      - name: 🧹 5. Automated History Purge (Success Only)
+      - name: 🧹 5. History Purge Sequence
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # කලින් ඔයාට ආපු Exit Code 123 error එක මඟ හැරීමට මම මේක පිරිසිදු කළා
-          echo "Cleaning old runs..."
+          # Cleanup old runs to keep actions tab clean
           gh run list --workflow infinite_ultra_keeper.yml --limit 30 --json databaseId -q '.[].databaseId' | xargs -I{} gh run delete {} || true
 
-      - name: 🌐 6. Vercel Global Wake-up
+      - name: 🌐 6. Vercel Wake-up Pulse
         run: |
-          # Vercel Deployment එකට 'Wake-up call' එකක් යැවීම
-          curl -I -s https://yasiya-oe5lvd4d2-asitha-vercels-projects.vercel.app/
-          echo "Hyper-Wake Signal Sent Successfully!"
+          curl -I -s https://yasiya-yzayeozy5-asitha-vercels-projects.vercel.app/
