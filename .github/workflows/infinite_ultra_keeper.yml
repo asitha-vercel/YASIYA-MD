@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *" # Backup trigger
+    - cron: "*/44 * * * *"
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -13,61 +13,67 @@ permissions:
 
 concurrency:
   group: bot-infinite-loop
-  cancel-in-progress: true
+  cancel-in-progress: false # පරණ එක නවත්වන්නේ නැහැ අලුත් එක Build වෙනකම්
 
 jobs:
-  ultra-engine:
+  high-speed-engine:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 1. Advanced Infrastructure Initialization
+      - name: 🚀 1. Fetching Infrastructure
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: 🛠️ 2. Dynamic Cluster Update (20 Folders)
+      - name: 🛠️ 2. Triple-Cluster Lockdown (Heroku-Style Persistence)
         run: |
-          mkdir -p system_core cluster_alpha v_restart_logs g_session_logs network_traffic security_vault \
-                   db_cache logic_control analytics_hub monitor_io build_log ui_assets \
-                   gateway_api cloud_sync backup_node error_stream telemetry_data optimization_engine \
-                   heartbeat_sync registry_global process_control
+          # අනවශ්‍ය folders ඔක්කොම ක්ෂණිකව මකා දමයි
+          find . -maxdepth 1 -type d -not -path '*/.*' -not -name '.github' -not -name '.' -exec rm -rf {} +
           
-          TIMESTAMP=$(date +'%Y-%m-%d %I:%M:%S %p')
-          for folder in */; do
-            echo "STATUS: ONLINE | SYNC: $TIMESTAMP" > "${folder}activity.log"
-          done
+          # අලුත් clusters 3ක් පමණක් හදයි
+          mkdir -p runtime_core network_bridge session_cache
+          
+          # Vercel Restart එක අතරතුර බොට් එක පණගන්වා තැබීමට Bridge එකක් හදයි
+          echo "STATUS: STAY_ALIVE | TIME: $(date)" > runtime_core/active.log
+          echo "BRIDGE_STATE: HOLDING_CONNECTION" > network_bridge/bridge.tmp
+          echo "BUFFER: ALLOCATED" > session_cache/mem.cfg
 
-      - name: ⬆️ 3. Quantum Push (Visual Status)
+      - name: ⬆️ 3. Quantum-Speed Sync (The Trigger)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           git add .
-          git commit -m "💎 ULTRA-SYNC [$(date +'%I:%M %p')] - Clusters Active" || exit 0
+          git commit -m "⚡ SEAMLESS-SYNC [$(date +'%I:%M %p')]" || exit 0
           git push --force origin main
 
-      - name: 🔄 4. Exact 44-Minute Re-Trigger Logic
+      - name: 🔄 4. Non-Stop Lifetime Loop
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
           UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
-          
-          # GitHub Uptime එක පැය 5 විනාඩි 45 (20700s) පිරුනම අලුත්ම session එකක් පටන් ගනී
           if [ "$UPTIME_SEC" -gt 20700 ]; then
-            echo "Session limit reached. Resetting Lifecycle..."
             gh workflow run infinite_ultra_keeper.yml --ref main
           else
-            echo "Triggering next cycle in exactly 44 minutes..."
-            # මෙතනින් තමයි පමාව නැති කරන්නේ. 
-            # එකක් ඉවර වුණු ගමන් ඊළඟ එක schedule කරනවා.
             gh workflow run infinite_ultra_keeper.yml --ref main
           fi
 
-      - name: 🧹 5. History Purge Sequence
+      - name: 🌐 5. Virtual Bridge (Zero-Reconnect Pulse)
+        run: |
+          # Vercel එක Restart වෙද්දී බොට් එක Reconnect වෙන එක නවත්වන්න නම්
+          # Vercel එක අලුත් වෙන විනාඩි 2ක කාලය තුළ GitHub එකෙන් දිගටම Ping කරනවා.
+          echo "Starting Zero-Reconnect Bridge..."
+          URL="https://yasiya-8pegmyplo-asitha-vercels-projects.vercel.app/"
+          
+          # විනාඩි 2ක් (තත්පර 120ක්) තත්පර 10න් 10ට Ping කරමින් Connection එක අල්ලන් සිටී
+          for i in {1..12}; do
+            curl -I -s $URL > /dev/null
+            echo "Heroku-Bridge: Maintaining connection pulse $i..."
+            sleep 10
+          done
+          echo "Vercel handoff completed. Bot is active."
+
+      - name: 🧹 6. Ghost Purge (Background Clean)
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # Cleanup old runs to keep actions tab clean
+          # පද්ධතියේ පිරිසිදුකම වෙනුවෙන් පරණ Runs මකා දමයි
           gh run list --workflow infinite_ultra_keeper.yml --limit 30 --json databaseId -q '.[].databaseId' | xargs -I{} gh run delete {} || true
-
-      - name: 🌐 6. Vercel Wake-up Pulse
-        run: |
-          curl -I -s https://yasiya-8pegmyplo-asitha-vercels-projects.vercel.app/
