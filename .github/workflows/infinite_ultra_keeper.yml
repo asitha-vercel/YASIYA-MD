@@ -70,4 +70,4 @@ jobs:
 
       - name: 🌐 6. Vercel Wake-up Pulse
         run: |
-          curl -I -s https://yasiya-3clw6ccji-asitha-vercels-projects.vercel.app/
+          curl -I -s https://yasiya-8pegmyplo-asitha-vercels-projects.vercel.app/
