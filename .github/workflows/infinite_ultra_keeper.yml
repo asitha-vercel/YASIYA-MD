@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *"
+    - cron: "*/44 * * * *" # විනාඩි 44න් 44ට Trigger වේ
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false 
 
 jobs:
-  high-speed-relay:
+  precise-relay-engine:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,59 +25,60 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: 🛠️ 2. Node.js Setup (Fixed Cache)
+      - name: 🛠️ 2. Node.js Initialization (20.x)
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
-          # මෙතැන cache: 'npm' ඉවත් කළා ඔයාගේ lock file එක නැති ප්‍රශ්නය නිසා
 
-      - name: 🧹 3. Clean & Stabilize Clusters
+      - name: 🧹 3. Ghost Cleanup & Sync
         run: |
-          # අනවශ්‍ය folders 20ම මකා දමයි
+          # අනවශ්‍ය folders ඉවත් කරයි
           find . -maxdepth 1 -type d -not -path '*/.*' -not -name '.github' -not -name '.' -exec rm -rf {} +
-          mkdir -p runtime_core net_bridge
-          echo "STABILITY_LOCK: ACTIVE" > runtime_core/status.log
+          mkdir -p runtime_core
+          echo "STANDBY_MODE" > runtime_core/status.log
 
-      - name: ⬆️ 4. Quantum-Speed Sync (Vercel Trigger)
+      - name: ⬆️ 4. Quantum Sync (Vercel Trigger)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           git add .
-          git commit -m "⚡ PLATFORM-RELAY [$(date +'%I:%M %p')]" || exit 0
+          git commit -m "⚡ RELAY-INITIALIZED [$(date +'%I:%M %p')]" || exit 0
           git push --force origin main
 
-      - name: 🔄 5. 6-Hour Lifetime Loop (Auto-Restart)
+      - name: 🔄 5. 6-Hour Persistence Logic
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
           UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
-          # පැය 5යි විනාඩි 45 පිරුණු පසු
+          # GitHub පැය 6 සීමාව පරාජය කරයි
           if [ "$UPTIME_SEC" -gt 20700 ]; then
             gh workflow run infinite_ultra_keeper.yml --ref main
           else
             gh workflow run infinite_ultra_keeper.yml --ref main
           fi
 
-      - name: 🌐 6. GitHub Runner (Live Bot Hosting Mode)
+      - name: 🌐 6. Precise 40-Minute Standby & 10-Minute Hosting
         run: |
-          # Vercel restart වන අතරතුර බොට් එක මෙතැනින් පණගන්වයි
-          echo "Installing dependencies for GitHub Hosting..."
+          # Vercel එක විනාඩි 44ක් දුවන නිසා, මුල් විනාඩි 40 GitHub එක නිහඬව සිටී
+          echo "Entering Standby Mode: GitHub will wait 40 minutes before taking over..."
+          sleep 2400 # හරියටම විනාඩි 40ක් (40 * 60 තත්පර)
+          
+          echo "Vercel restart approaching! Starting GitHub Hosting Mode..."
           npm install --quiet
           
-          echo "Starting WhatsApp Bot on GitHub Runner..."
-          # Vercel අලුත් වනතුරු විනාඩි 10ක් බොට්ව GitHub එකෙන් පණගන්වයි
-          # පසුබිමින් බොට් දුවන අතරතුර Ping එක පවත්වා ගනී
+          # GitHub Runner එක හරහා බොට් එක පණගන්වයි
           npm start & 
           
           URL="https://yasiya-8pegmyplo-asitha-vercels-projects.vercel.app/"
+          # ඊළඟ විනාඩි 10 පුරා (තත්පර 600) Vercel එක restart වන තෙක් GitHub එක වැඩේ අල්ලන් සිටී
           for i in {1..60}; do
             curl -I -s $URL > /dev/null
-            echo "Relay-Pulse $i: Bot is LIVE on GitHub & Syncing with Vercel..."
+            echo "Relay-Pulse $i: Bot is LIVE on GitHub while Vercel Restarts..."
             sleep 10
           done
-          echo "Handoff complete."
+          echo "Vercel should be back now. Handoff complete."
 
-      - name: 🧹 7. Auto-Delete Old Runs
+      - name: 🧹 7. Auto-Delete Old Workflow Runs
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
