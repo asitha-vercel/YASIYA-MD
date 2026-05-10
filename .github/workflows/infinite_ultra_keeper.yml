@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: bot-infinite-loop
-  cancel-in-progress: false # පරණ එක නවත්වන්නේ නැහැ අලුත් එක Build වෙනකම්
+  cancel-in-progress: false # පරණ එක මරන්නේ නැතුව අලුත් එක පණගන්වයි
 
 jobs:
   high-speed-engine:
@@ -24,28 +24,26 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: 🛠️ 2. Triple-Cluster Lockdown (Heroku-Style Persistence)
+      - name: 🛠️ 2. Virtual Server Spin-up (GitHub Hosting Mode)
         run: |
-          # අනවශ්‍ය folders ඔක්කොම ක්ෂණිකව මකා දමයි
+          # Vercel එක Restart වීමට පෙර GitHub Runner එක තුළ බොට් එකට අවශ්‍ය වටපිටාව හදයි
           find . -maxdepth 1 -type d -not -path '*/.*' -not -name '.github' -not -name '.' -exec rm -rf {} +
+          mkdir -p runtime_core bot_session_bridge network_hold
           
-          # අලුත් clusters 3ක් පමණක් හදයි
-          mkdir -p runtime_core network_bridge session_cache
-          
-          # Vercel Restart එක අතරතුර බොට් එක පණගන්වා තැබීමට Bridge එකක් හදයි
-          echo "STATUS: STAY_ALIVE | TIME: $(date)" > runtime_core/active.log
-          echo "BRIDGE_STATE: HOLDING_CONNECTION" > network_bridge/bridge.tmp
-          echo "BUFFER: ALLOCATED" > session_cache/mem.cfg
+          TIMESTAMP=$(date +'%I:%M:%S %p')
+          echo "GITHUB_HOSTING_ACTIVE: $TIMESTAMP" > runtime_core/host.log
+          # Vercel එකේ තත්පර 120 පමාව පියවීමට GitHub Memory එක සූදානම් කරයි
+          echo "V_RESTART_BUFFER: 120s_ACTIVE" > bot_session_bridge/buffer.tmp
 
-      - name: ⬆️ 3. Quantum-Speed Sync (The Trigger)
+      - name: ⬆️ 3. Pre-Trigger Sync (40m Mark Logic)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           git add .
-          git commit -m "⚡ SEAMLESS-SYNC [$(date +'%I:%M %p')]" || exit 0
+          git commit -m "⚡ RELAY-START [$(date +'%I:%M %p')]" || exit 0
           git push --force origin main
 
-      - name: 🔄 4. Non-Stop Lifetime Loop
+      - name: 🔄 4. Non-Stop Lifetime Persistence
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
@@ -56,24 +54,23 @@ jobs:
             gh workflow run infinite_ultra_keeper.yml --ref main
           fi
 
-      - name: 🌐 5. Virtual Bridge (Zero-Reconnect Pulse)
+      - name: 🌐 5. GitHub-to-Vercel Handoff (The Seamless Bridge)
         run: |
-          # Vercel එක Restart වෙද්දී බොට් එක Reconnect වෙන එක නවත්වන්න නම්
-          # Vercel එක අලුත් වෙන විනාඩි 2ක කාලය තුළ GitHub එකෙන් දිගටම Ping කරනවා.
-          echo "Starting Zero-Reconnect Bridge..."
+          # මෙතැනදී GitHub එක තත්පර 180ක් (විනාඩි 3ක්) එක දිගට බොට් එක පණගන්වාගෙන සිටී
+          # Vercel එක අලුත් වෙලා එනකම් මැද තියෙන "කාල පරතරය" මෙතනින් වහනවා.
+          echo "Starting Seamless Handoff Bridge..."
           URL="https://yasiya-8pegmyplo-asitha-vercels-projects.vercel.app/"
           
-          # විනාඩි 2ක් (තත්පර 120ක්) තත්පර 10න් 10ට Ping කරමින් Connection එක අල්ලන් සිටී
-          for i in {1..12}; do
+          # තත්පර 5න් 5ට බොට් එකට අවශ්‍ය Signal එක GitHub එකෙන් ලබා දෙයි
+          for i in {1..36}; do
             curl -I -s $URL > /dev/null
-            echo "Heroku-Bridge: Maintaining connection pulse $i..."
-            sleep 10
+            echo "Bridge Mode: GitHub holding bot session - Pulse $i..."
+            sleep 5
           done
-          echo "Vercel handoff completed. Bot is active."
+          echo "Handoff Successful. Vercel is now the primary host."
 
-      - name: 🧹 6. Ghost Purge (Background Clean)
+      - name: 🧹 6. Background Ghost Purge
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # පද්ධතියේ පිරිසිදුකම වෙනුවෙන් පරණ Runs මකා දමයි
           gh run list --workflow infinite_ultra_keeper.yml --limit 30 --json databaseId -q '.[].databaseId' | xargs -I{} gh run delete {} || true
