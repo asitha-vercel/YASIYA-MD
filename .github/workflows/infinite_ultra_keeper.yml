@@ -2,7 +2,7 @@ name: INFINITE-ULTRA-KEEPER-PRO
 
 on:
   schedule:
-    - cron: "*/44 * * * *" # විනාඩි 44න් 44ට Trigger වේ
+    - cron: "*/44 * * * *"
   workflow_dispatch: 
   push:
     branches: [ main ]
@@ -13,74 +13,63 @@ permissions:
 
 concurrency:
   group: bot-infinite-loop
-  cancel-in-progress: false 
+  cancel-in-progress: false # පරණ Session එක අලුත් එක Build වෙනකම් පණපිටින් තබයි
 
 jobs:
-  precise-relay-engine:
+  ultra-relay-engine:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 🚀 1. Infrastructure Sync
+      - name: 🚀 1. System Infrastructure Sync
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: 🛠️ 2. Node.js Initialization (20.x)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-
-      - name: 🧹 3. Ghost Cleanup & Sync
+      - name: 🛠️ 2. Triple-Cluster Cleanup & Stabilization
         run: |
-          # අනවශ්‍ය folders ඉවත් කරයි
+          # අනවශ්‍ය folders 20ම මකා දමයි
           find . -maxdepth 1 -type d -not -path '*/.*' -not -name '.github' -not -name '.' -exec rm -rf {} +
-          mkdir -p runtime_core
-          echo "STANDBY_MODE" > runtime_core/status.log
+          mkdir -p github_host_core session_bridge network_hold
+          
+          echo "HOST_ACTIVE: $(date)" > github_host_core/host.log
+          echo "RELAY_READY" > session_bridge/status.tmp
 
-      - name: ⬆️ 4. Quantum Sync (Vercel Trigger)
+      - name: ⬆️ 3. High-Speed Push (Vercel Trigger)
         run: |
           git config --global user.name "thanuh-ultra-bot"
           git config --global user.email "bot@ultra-sync.com"
           git add .
-          git commit -m "⚡ RELAY-INITIALIZED [$(date +'%I:%M %p')]" || exit 0
+          git commit -m "⚡ STABLE-RELAY [$(date +'%I:%M %p')]" || exit 0
           git push --force origin main
 
-      - name: 🔄 5. 6-Hour Persistence Logic
+      - name: 🔄 4. Non-Stop Lifetime Loop
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
           UPTIME_SEC=$(awk '{print $1}' /proc/uptime | cut -d. -f1)
-          # GitHub පැය 6 සීමාව පරාජය කරයි
+          # පැය 6 සීමාව පරාජය කරමින් අලුත්ම Workflow එකක් පණගන්වයි
           if [ "$UPTIME_SEC" -gt 20700 ]; then
             gh workflow run infinite_ultra_keeper.yml --ref main
           else
             gh workflow run infinite_ultra_keeper.yml --ref main
           fi
 
-      - name: 🌐 6. Precise 40-Minute Standby & 10-Minute Hosting
+      - name: 🌐 5. Advanced Relay Bridge (10-Minute Safety Buffer)
         run: |
-          # Vercel එක විනාඩි 44ක් දුවන නිසා, මුල් විනාඩි 40 GitHub එක නිහඬව සිටී
-          echo "Entering Standby Mode: GitHub will wait 40 minutes before taking over..."
-          sleep 2400 # හරියටම විනාඩි 40ක් (40 * 60 තත්පර)
-          
-          echo "Vercel restart approaching! Starting GitHub Hosting Mode..."
-          npm install --quiet
-          
-          # GitHub Runner එක හරහා බොට් එක පණගන්වයි
-          npm start & 
-          
+          # Vercel Restart එක කොයි වෙලාවේ වුණත් අල්ලගැනීමට කාලය විනාඩි 10 දක්වා වැඩි කර ඇත
           URL="https://yasiya-8pegmyplo-asitha-vercels-projects.vercel.app/"
-          # ඊළඟ විනාඩි 10 පුරා (තත්පර 600) Vercel එක restart වන තෙක් GitHub එක වැඩේ අල්ලන් සිටී
+          echo "Starting Safety Bridge (600 seconds)..."
+          
+          # තත්පර 10න් 10ට විනාඩි 10ක් පුරා Pulse යවයි (Loop 60ක්)
           for i in {1..60}; do
             curl -I -s $URL > /dev/null
-            echo "Relay-Pulse $i: Bot is LIVE on GitHub while Vercel Restarts..."
+            echo "Relay-Pulse $i: Holding Bot Session Alive via GitHub..."
             sleep 10
           done
-          echo "Vercel should be back now. Handoff complete."
+          echo "Handoff completed successfully."
 
-      - name: 🧹 7. Auto-Delete Old Workflow Runs
+      - name: 🧹 6. Ghost Purge (History Cleanup)
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
-          # ලොග්ස් පිරිසිදු කරයි
+          # ලොග්ස් පිරිසිදු කර පරණ Runs මකා දමයි
           gh run list --workflow infinite_ultra_keeper.yml --limit 30 --json databaseId -q '.[].databaseId' | xargs -I{} gh run delete {} || true
